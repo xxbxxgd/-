@@ -20,6 +20,19 @@ if ($conn->connect_error) {
     die("連接失敗: " . $conn->connect_error);
 }
 
+// 獲取排序參數
+$sort = isset($_GET['sort']) ? $_GET['sort'] : 'id';
+$order = isset($_GET['order']) ? $_GET['order'] : 'desc';
+
+// 驗證排序欄位
+$allowed_sort_fields = ['id', 'case_name', 'client_name', 'client_age', 'status'];
+if (!in_array($sort, $allowed_sort_fields)) {
+    $sort = 'id';
+}
+
+// 驗證排序方向
+$order = strtolower($order) === 'asc' ? 'asc' : 'desc';
+
 // 獲取系統概況數據
 $totalCases = $conn->query("SELECT COUNT(*) as total FROM cases")->fetch_assoc()['total'];
 $activeCases = $conn->query("SELECT COUNT(*) as active FROM cases WHERE status = 1")->fetch_assoc()['active'];
@@ -135,7 +148,7 @@ $totalInterviews = $conn->query("SELECT COUNT(*) as total FROM interview_records
     <div class="dashboard-container">
         <h1 class="mb-4">管理員儀表板</h1>
 
-        <!-- 統計數據 -->
+        <!-- 統計��據 -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-title">
@@ -177,10 +190,38 @@ $totalInterviews = $conn->query("SELECT COUNT(*) as total FROM interview_records
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>編號</th>
-                            <th>個案名稱</th>
-                            <th>個案姓名</th>
-                            <th>年齡</th>
+                            <th>
+                                <a href="?sort=id&order=<?= ($sort == 'id' && $order == 'asc') ? 'desc' : 'asc' ?>" class="text-dark text-decoration-none">
+                                    編號
+                                    <?php if($sort == 'id'): ?>
+                                        <i class="bi bi-arrow-<?= $order == 'asc' ? 'up' : 'down' ?>"></i>
+                                    <?php endif; ?>
+                                </a>
+                            </th>
+                            <th>
+                                <a href="?sort=case_name&order=<?= ($sort == 'case_name' && $order == 'asc') ? 'desc' : 'asc' ?>" class="text-dark text-decoration-none">
+                                    個案名稱
+                                    <?php if($sort == 'case_name'): ?>
+                                        <i class="bi bi-arrow-<?= $order == 'asc' ? 'up' : 'down' ?>"></i>
+                                    <?php endif; ?>
+                                </a>
+                            </th>
+                            <th>
+                                <a href="?sort=client_name&order=<?= ($sort == 'client_name' && $order == 'asc') ? 'desc' : 'asc' ?>" class="text-dark text-decoration-none">
+                                    個案姓名
+                                    <?php if($sort == 'client_name'): ?>
+                                        <i class="bi bi-arrow-<?= $order == 'asc' ? 'up' : 'down' ?>"></i>
+                                    <?php endif; ?>
+                                </a>
+                            </th>
+                            <th>
+                                <a href="?sort=client_age&order=<?= ($sort == 'client_age' && $order == 'asc') ? 'desc' : 'asc' ?>" class="text-dark text-decoration-none">
+                                    年齡
+                                    <?php if($sort == 'client_age'): ?>
+                                        <i class="bi bi-arrow-<?= $order == 'asc' ? 'up' : 'down' ?>"></i>
+                                    <?php endif; ?>
+                                </a>
+                            </th>
                             <th>聯絡方式</th>
                             <th>負責社工</th>
                             <th>狀態</th>
@@ -200,7 +241,7 @@ $totalInterviews = $conn->query("SELECT COUNT(*) as total FROM interview_records
                             FROM cases c
                             LEFT JOIN `case information` ci ON c.case_name = ci.case_name
                             LEFT JOIN social_workers sw ON c.social_worker_id = sw.id
-                            ORDER BY c.id DESC";
+                            ORDER BY $sort $order";
                         
                         $result = $conn->query($sql);
                         
@@ -568,11 +609,10 @@ $totalInterviews = $conn->query("SELECT COUNT(*) as total FROM interview_records
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="assignCase()">確認分配</button>
+                    <button type="button" class="btn btn-primary" onclick="assignCase()">確���分配</button>
                 </div>
             </div>
         </div>
     </div>
 </body>
 </html>
-<?php $conn->close(); ?>
