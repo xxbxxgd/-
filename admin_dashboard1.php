@@ -609,7 +609,7 @@ $totalInterviews = $conn->query("SELECT COUNT(*) as total FROM interview_records
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="assignCase()">確���分配</button>
+                    <button type="button" class="btn btn-primary" onclick="assignCase()">確定分配</button>
                 </div>
             </div>
         </div>
