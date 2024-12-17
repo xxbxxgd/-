@@ -106,6 +106,75 @@ $social_worker_id = $_SESSION['user_id'];
         .delete-btn:hover {
             background-color: #c82333;
         }
+        .edit-btn {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .edit-btn:hover {
+            background-color: #0b5ed7;
+        }
+        .modal-content {
+            border-radius: 15px;
+        }
+        .modal-header {
+            border-radius: 15px 15px 0 0;
+            padding: 1.5rem;
+        }
+        .form-control {
+            border: 1px solid #e0e0e0;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            border-color: #b69d74;
+            box-shadow: 0 0 0 0.2rem rgba(182, 157, 116, 0.15);
+        }
+        .form-control:disabled {
+            background-color: #f8f9fa;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #d4c19c, #b69d74);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #c4b08b, #a68c63);
+            transform: translateY(-1px);
+        }
+        .btn-light {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        .btn-light:hover {
+            background: #e9ecef;
+        }
+        .form-label {
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+        .bg-gradient-primary-to-secondary {
+            background: linear-gradient(45deg, #d4c19c, #b69d74);
+        }
+        .modal-dialog {
+            margin-top: 5vh;
+        }
+        @media (max-width: 768px) {
+            .modal-dialog {
+                margin: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -126,13 +195,17 @@ $social_worker_id = $_SESSION['user_id'];
                 </thead>
                 <tbody>
                     <?php
-                    $sql = "SELECT id, case_name, created_at, status 
-                           FROM cases 
-                           WHERE social_worker_id = ? 
-                           ORDER BY created_at DESC";
+                    $sql = "SELECT c.id, c.case_name, c.status, c.created_at as assignment_date 
+                            FROM cases c 
+                            WHERE c.social_worker_id = ? 
+                            ORDER BY c.created_at ASC";
                     
                     $stmt = $conn->prepare($sql);
-                    $stmt->bind_param("i", $social_worker_id);
+                    if ($stmt === false) {
+                        die("準備查詢失敗: " . $conn->error);
+                    }
+
+                    $stmt->bind_param("i", $_SESSION['user_id']);
                     $stmt->execute();
                     $result = $stmt->get_result();
 
@@ -141,7 +214,7 @@ $social_worker_id = $_SESSION['user_id'];
                             echo "<tr>";
                             echo "<td>{$row['id']}</td>";
                             echo "<td>{$row['case_name']}</td>";
-                            echo "<td class='date-column'>{$row['created_at']}</td>";
+                            echo "<td class='date-column'>{$row['assignment_date']}</td>";
                             echo "<td class='status-" . ($row['status'] ? 'active' : 'inactive') . "'>" . 
                                  ($row['status'] ? '進行中' : '已結束') . "</td>";
                             echo "</tr>";
@@ -168,14 +241,18 @@ $social_worker_id = $_SESSION['user_id'];
                 </thead>
                 <tbody>
                     <?php
-                    $sql = "SELECT ir.id, c.case_name, ir.interview_date, ir.record
-                           FROM interview_records ir
-                           JOIN cases c ON ir.case_id = c.id
-                           WHERE c.social_worker_id = ?
-                           ORDER BY ir.interview_date DESC";
+                    $sql = "SELECT ir.id, c.case_name, ir.interview_date, ir.record 
+                            FROM interview_records ir
+                            JOIN cases c ON ir.case_id = c.id
+                            WHERE c.social_worker_id = ?
+                            ORDER BY ir.interview_date DESC";
                     
                     $stmt = $conn->prepare($sql);
-                    $stmt->bind_param("i", $social_worker_id);
+                    if ($stmt === false) {
+                        die("準備查詢失敗: " . $conn->error);
+                    }
+
+                    $stmt->bind_param("i", $_SESSION['user_id']);
                     $stmt->execute();
                     $result = $stmt->get_result();
 
@@ -186,8 +263,11 @@ $social_worker_id = $_SESSION['user_id'];
                             echo "<td class='date-column'>{$row['interview_date']}</td>";
                             echo "<td class='record-details'>" . htmlspecialchars($row['record']) . "</td>";
                             echo "<td>
-                                    <button class='delete-btn' onclick='confirmDeleteInterview({$row['id']})'>
-                                        刪除
+                                    <button class='edit-btn me-2' onclick='openEditWindow(" . $row['id'] . ")' style='background-color: #0d6efd;'>
+                                        <i class='bi bi-pencil me-1'></i>編輯
+                                    </button>
+                                    <button class='delete-btn' onclick='confirmDeleteInterview(" . $row['id'] . ")'>
+                                        <i class='bi bi-trash me-1'></i>刪除
                                     </button>
                                   </td>";
                             echo "</tr>";
@@ -243,6 +323,15 @@ $social_worker_id = $_SESSION['user_id'];
                 });
             }
         });
+    }
+    </script>
+
+    <!-- 添加 JavaScript -->
+    <script>
+    function openEditWindow(id) {
+        // 開啟新視窗
+        window.open('edit_interview.php?id=' + id, 'EditInterview', 
+            'width=800,height=600,resizable=yes,scrollbars=yes,status=yes');
     }
     </script>
 </body>

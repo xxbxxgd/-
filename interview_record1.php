@@ -21,17 +21,43 @@ if ($conn->connect_error) {
     die("連接失敗: " . $conn->connect_error);
 }
 
+$edit_mode = false;
+$interview_data = null;
+
+if (isset($_GET['id'])) {
+    $edit_mode = true;
+    $interview_id = $_GET['id'];
+    
+    // 獲取訪談記錄數據
+    $sql = "SELECT ir.*, c.case_name 
+            FROM interview_records ir
+            JOIN cases c ON ir.case_id = c.id
+            WHERE ir.id = ? AND c.social_worker_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $interview_id, $_SESSION['user_id']);
+    $stmt->execute();
+    $interview_data = $stmt->get_result()->fetch_assoc();
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $case_id = $_POST['case_id'];
     $interview_date = $_POST['interview_date'];
     $record = $_POST['record'];
 
-    $sql = "INSERT INTO interview_records (case_id, interview_date, record) VALUES ('$case_id', '$interview_date', '$record')";
-
-    if ($conn->query($sql) === TRUE) {
-        $successMessage = "訪談紀錄提交成功！";
+    if ($edit_mode) {
+        $sql = "UPDATE interview_records SET case_id = ?, interview_date = ?, record = ? WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("issi", $case_id, $interview_date, $record, $interview_id);
     } else {
-        $errorMessage = "錯誤: " . $sql . "<br>" . $conn->error;
+        $sql = "INSERT INTO interview_records (case_id, interview_date, record) VALUES (?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("iss", $case_id, $interview_date, $record);
+    }
+
+    if ($stmt->execute()) {
+        $successMessage = $edit_mode ? "訪談紀錄更新成功！" : "訪談紀錄提交成功！";
+    } else {
+        $errorMessage = "錯誤: " . $stmt->error;
     }
 }
 
@@ -41,187 +67,115 @@ $conn->close();
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>新增訪談紀錄</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-    .form-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 40px;
-    }
-
-    .form-group {
-        margin-bottom: 25px;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 10px;
-        font-weight: bold;
-        font-size: 18px;
-    }
-
-    .form-group input, 
-    .form-group select, 
-    .form-group textarea,
-    .submit-btn {  /* 將所有輸入元素和按鈕統一寬度 */
-        width: 100%;
-        padding: 15px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 16px;
-        box-sizing: border-box;  /* 確保 padding 不會影響整體寬度 */
-    }
-
-    /* 特別調整下拉選單 */
-    #case_id {
-        height: auto;
-        appearance: none;
-        background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23333' viewBox='0 0 12 12'%3E%3Cpath d='M6 9L1 4h10z'/%3E%3C/svg%3E") no-repeat right 15px center/12px 12px;
-        padding-right: 40px;
-    }
-
-    /* 日期輸入框特別調整 */
-    #interview_date {
-        height: auto;
-        appearance: none;
-    }
-
-    .form-group textarea {
-        min-height: 200px;
-        resize: vertical;  /* 只允許垂直調整大小 */
-    }
-
-    .submit-btn {
-        background-color: #2c3e50;
-        color: white;
-        border: none;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        font-size: 18px;
-        font-weight: bold;
-        margin-top: 10px;
-    }
-
-    .submit-btn:hover {
-        background-color: #34495e;
-    }
-
-    .alert {
-        padding: 20px;
-        margin: 20px auto;
-        border-radius: 8px;
-        font-size: 18px;
-        max-width: 800px;
-        display: flex;
-        align-items: center;
-        position: relative;
-        padding-left: 60px;
-        animation: slideIn 0.5s ease-out;
-    }
-
-    @keyframes slideIn {
-        from {
-            transform: translateY(-20px);
-            opacity: 0;
+        .bg-gradient-primary-to-secondary {
+            background: linear-gradient(45deg, #d4c19c, #b69d74);
         }
-        to {
-            transform: translateY(0);
-            opacity: 1;
+
+        .form-control, .form-select {
+            border: 1px solid #e0e0e0;
+            transition: all 0.2s;
         }
-    }
 
-    .alert::before {
-        content: '';
-        position: absolute;
-        left: 20px;
-        width: 24px;
-        height: 24px;
-        background-size: contain;
-        background-repeat: no-repeat;
-    }
+        .form-control:focus, .form-select:focus {
+            border-color: #b69d74;
+            box-shadow: 0 0 0 0.2rem rgba(182, 157, 116, 0.15);
+        }
 
-    .alert-success {
-        background-color: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
+        .btn-primary {
+            background: linear-gradient(45deg, #d4c19c, #b69d74);
+            border: none;
+        }
 
-    .alert-success::before {
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23155724'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/%3E%3C/svg%3E");
-    }
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #c4b08b, #a68c63);
+        }
 
-    .alert-danger {
-        background-color: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .alert-danger::before {
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23721c24'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z'/%3E%3C/svg%3E");
-    }
-
-    .content h1 {
-        font-size: 32px;    /* 增加標題字體大小 */
-        margin-bottom: 30px;
-        color: #2c3e50;
-        text-align: center;
-        padding: 20px 0;
-    }
-
-    
-</style>
+        .form-label {
+            color: #6c5a3d;
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body>
-    <div class="content">
-        <h1>新增訪談紀錄</h1>
-        
-        <?php if(isset($successMessage)): ?>
-            <div class="alert alert-success"><?= $successMessage ?></div>
-        <?php endif; ?>
-        <?php if(isset($errorMessage)): ?>
-            <div class="alert alert-danger"><?= $errorMessage ?></div>
-        <?php endif; ?>
-
-        <div class="form-container">
-            <form action="interview_record1.php" method="POST">
-                <div class="form-group">
-                    <label for="case_id" style="font-size: 16px;">選擇個案</label>
-                    <select id="case_id" name="case_id" required style="font-size: 16px; padding: 10px;">
-                        <option value="">選擇個案</option>
-                        <?php
-                        // 修改資料庫連接為正確的資料庫名稱
-                        $conn = new mysqli('localhost', 'root', '', 'test1');
-                        
-                        // 使用 prepared statement 來防止 SQL 注入
-                        $sql = "SELECT id, case_name FROM cases WHERE social_worker_id = ? AND status = 1";
-                        $stmt = $conn->prepare($sql);
-                        $stmt->bind_param("i", $_SESSION['user_id']);
-                        $stmt->execute();
-                        $result = $stmt->get_result();
-
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<option value='" . $row['id'] . "'>" . htmlspecialchars($row['case_name']) . "</option>";
-                        }
-                        $stmt->close();
-                        ?>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="interview_date" style="font-size: 16px;">訪談日期</label>
-                    <input type="date" id="interview_date" name="interview_date" required style="font-size: 16px; padding: 10px;">
-                </div>
-
-                <div class="form-group">
-                    <label for="record" style="font-size: 16px;">訪談紀錄</label>
-                    <textarea id="record" name="record" rows="6" required style="font-size: 16px; padding: 10px;"></textarea>
-                </div>
-
-                <button type="submit" class="submit-btn" style="font-size: 16px; padding: 12px;">提交訪談紀錄</button>
-            </form>
+    <div class="container py-3">
+        <div class="card shadow border-0 rounded-3">
+            <div class="card-header bg-gradient-primary-to-secondary text-white py-3">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-journal-plus me-2"></i>
+                    <?= $edit_mode ? '編輯訪談紀錄' : '新增訪談紀錄' ?>
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <?php if ($edit_mode): ?>
+                        <input type="hidden" name="interview_id" value="<?= $interview_data['id'] ?>">
+                    <?php endif; ?>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="case_id" class="form-label">
+                                    <i class="bi bi-folder2 me-2"></i>個案名稱
+                                </label>
+                                <?php if ($edit_mode): ?>
+                                    <input type="text" class="form-control" value="<?= htmlspecialchars($interview_data['case_name']) ?>" disabled>
+                                    <input type="hidden" name="case_id" value="<?= $interview_data['case_id'] ?>">
+                                <?php else: ?>
+                                    <select class="form-select" id="case_id" name="case_id" required>
+                                        <option value="" selected disabled>請選擇個案...</option>
+                                        <?php
+                                        $conn = new mysqli('localhost', 'root', '', 'test1');
+                                        $sql = "SELECT id, case_name FROM cases WHERE social_worker_id = ? AND status = 1";
+                                        $stmt = $conn->prepare($sql);
+                                        $stmt->bind_param("i", $_SESSION['user_id']);
+                                        $stmt->execute();
+                                        $result = $stmt->get_result();
+                                        while ($row = $result->fetch_assoc()) {
+                                            echo "<option value='" . $row['id'] . "'>" . htmlspecialchars($row['case_name']) . "</option>";
+                                        }
+                                        $stmt->close();
+                                        ?>
+                                    </select>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="interview_date" class="form-label">
+                                    <i class="bi bi-calendar-date me-2"></i>訪談日期
+                                </label>
+                                <input type="date" class="form-control" id="interview_date" name="interview_date" 
+                                       value="<?= $edit_mode ? $interview_data['interview_date'] : '' ?>" required>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label for="record" class="form-label">
+                                    <i class="bi bi-journal-text me-2"></i>訪談紀錄
+                                </label>
+                                <textarea class="form-control" id="record" name="record" rows="4" required><?= $edit_mode ? htmlspecialchars($interview_data['record']) : '' ?></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-2"></i><?= $edit_mode ? '更新紀錄' : '提交紀錄' ?>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

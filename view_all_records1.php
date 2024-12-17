@@ -134,147 +134,296 @@ $conn = new mysqli('localhost', 'root', '', 'test1');
             background-color: #6c757d;
             color: white;
         }
+
+        /* 添加搜尋框樣式 */
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .input-group .form-control {
+            border: 1px solid #e0e0e0;
+            padding: 12px 15px;
+            font-size: 14px;
+        }
+
+        .input-group .form-control:focus {
+            border-color: #b69d74;
+            box-shadow: 0 0 0 0.2rem rgba(182, 157, 116, 0.15);
+        }
+
+        .input-group .btn-primary {
+            background: linear-gradient(45deg, #d4c19c, #b69d74);
+            border: none;
+            padding: 0 20px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .input-group .btn-primary:hover {
+            background: linear-gradient(45deg, #c4b08b, #a68c63);
+        }
+
+        /* 清除浮動 */
+        .col-12::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        .input-group {
+            display: flex;
+        }
+
+        .input-group .form-control {
+            border: 1px solid #ccc;
+            border-right: none;
+            border-radius: 4px 0 0 4px;
+        }
+
+        .input-group .btn-primary {
+            border-radius: 0 4px 4px 0;
+            padding: 4px 12px;
+            background-color: #0d6efd;
+            border: 1px solid #0d6efd;
+        }
+
+        .search-box {
+            margin-bottom: 10px;
+        }
+
+        .input-group {
+            display: flex;
+        }
+
+        .input-group .form-control {
+            border-radius: 4px 0 0 4px;
+        }
+
+        .btn-search {
+            height: 35px;
+            padding: 4px 12px;
+            background-color: #0d6efd;
+            border: 1px solid #0d6efd;
+            color: white;
+            border-radius: 0 4px 4px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-search:hover {
+            background-color: #0b5ed7;
+            border-color: #0b5ed7;
+            color: white;
+        }
+
+        .search-box {
+            margin: 0;
+        }
+
+        /* 確保標題和搜尋框的對齊 */
+        .section h2 {
+            font-size: 24px;
+            line-height: 1.2;
+        }
+
+        .table-container {
+            position: relative;
+            margin-top: 50px; /* 為搜尋框留出空間 */
+        }
+
+        .search-box {
+            position: absolute;
+            top: -45px;
+            right: 0;
+        }
+
+        .input-group {
+            display: flex;
+        }
+
+        .input-group .form-control {
+            border-radius: 4px 0 0 4px;
+        }
+
+        .btn-search {
+            height: 35px;
+            padding: 4px 12px;
+            background-color: #0d6efd;
+            border: 1px solid #0d6efd;
+            color: white;
+            border-radius: 0 4px 4px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-search:hover {
+            background-color: #0b5ed7;
+            border-color: #0b5ed7;
+            color: white;
+        }
+
+        .input-group {
+            display: flex;
+        }
+
+        .input-group .form-control {
+            border-radius: 4px 0 0 4px;
+        }
+
+        .btn-search {
+            padding: 4px 12px;
+            background-color: #0d6efd;
+            border: 1px solid #0d6efd;
+            color: white;
+            border-radius: 0 4px 4px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            width: 70px;
+        }
+
+        .btn-search:hover {
+            background-color: #0b5ed7;
+            border-color: #0b5ed7;
+            color: white;
+        }
+
+        .search-box {
+            margin: 0;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <div class="records-container">
-        <!-- 個案分配紀錄 -->
-        <div class="section">
-            <h2>個案分配紀錄</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>個案編號</th>
-                        <th>個案名稱</th>
-                        <th>負責社工</th>
-                        <th>分配日期</th>
-                        <th>狀態</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $result = $conn->query("
-                        SELECT c.id, c.case_name, sw.name as social_worker_name, 
-                               c.created_at, c.status
-                        FROM cases c 
+        <div class="container">
+            <h1>所有紀錄</h1>
+            
+            <div class="section">
+                <h2>個案分配紀錄</h2>
+                
+                <!-- 添加搜尋框 -->
+                <div class="search-container mb-4">
+                    <form method="GET" class="row justify-content-end">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <input type="text" name="search" class="form-control" 
+                                       placeholder="搜尋個案名稱..." 
+                                       value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="bi bi-search"></i>搜尋
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>個案編號</th>
+                            <th>個案名稱</th>
+                            <th>負責社工</th>
+                            <th>分配日期</th>
+                            <th>狀態</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        // 修改查詢以支援搜尋
+                        $search = isset($_GET['search']) ? $_GET['search'] : '';
+                        $sql = "
+                            SELECT c.id, c.case_name, sw.name as social_worker_name, 
+                                   c.created_at, c.status
+                            FROM cases c 
+                            LEFT JOIN social_workers sw ON c.social_worker_id = sw.id
+                            WHERE c.case_name LIKE ?
+                            ORDER BY c.created_at ASC
+                        ";
+                        
+                        $stmt = $conn->prepare($sql);
+                        $searchTerm = "%$search%";
+                        $stmt->bind_param("s", $searchTerm);
+                        $stmt->execute();
+                        $result = $stmt->get_result();
+
+                        if ($result->num_rows > 0) {
+                            while ($row = $result->fetch_assoc()) {
+                                echo "<tr>";
+                                echo "<td>{$row['id']}</td>";
+                                echo "<td>{$row['case_name']}</td>";
+                                echo "<td>" . ($row['social_worker_name'] ? $row['social_worker_name'] : '尚未分配社工') . "</td>";
+                                echo "<td class='date-column'>{$row['created_at']}</td>";
+                                echo "<td>";
+                                echo "<span class='status-badge " . ($row['status'] ? 'status-active' : 'status-inactive') . "'>" . 
+                                     ($row['status'] ? '進行中' : '已結束') . "</span>";
+                                echo "</td>";
+                                echo "<td>";
+                                echo "<button class='delete-btn' onclick='confirmDelete({$row['id']})'>刪除</button>";
+                                echo "</td>";
+                                echo "</tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='6'>沒有找到相關個案</td></tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <h2>訪談紀錄</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>訪談編號</th>
+                            <th>個案名稱</th>
+                            <th>負責社工</th>
+                            <th>訪談日期</th>
+                            <th>訪談內容</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        $result = $conn->query("
+                        SELECT ir.id, c.case_name, sw.name as social_worker_name,
+                               ir.interview_date, ir.record
+                        FROM interview_records ir  /* 修改這裡：從 interview 改為 interview_records */
+                        LEFT JOIN cases c ON ir.case_id = c.id
                         LEFT JOIN social_workers sw ON c.social_worker_id = sw.id
-                        ORDER BY c.id ASC
+                        ORDER BY ir.interview_date DESC
                     ");
-                    if ($result) {
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<tr>";
-                            echo "<td>{$row['id']}</td>";
-                            echo "<td>{$row['case_name']}</td>";
-                            echo "<td>" . ($row['social_worker_name'] ? $row['social_worker_name'] : '尚未分配社工') . "</td>";
-                            echo "<td class='date-column'>{$row['created_at']}</td>";
-                            echo "<td>";
-                            echo "<span class='status-badge " . ($row['status'] ? 'status-active' : 'status-inactive') . "'>" . 
-                                 ($row['status'] ? '進行中' : '已結束') . "</span>";
-                            echo "</td>";
-                            echo "<td>";
-                            echo "<button class='delete-btn' onclick='confirmDelete({$row['id']})'>刪除</button>";
-                            echo "</td>";
-                            echo "</tr>";
+                        if ($result) {
+                            while ($row = $result->fetch_assoc()) {
+                                echo "<tr>";
+                                echo "<td>{$row['id']}</td>";
+                                echo "<td>{$row['case_name']}</td>";
+                                echo "<td>{$row['social_worker_name']}</td>";
+                                echo "<td class='date-column'>{$row['interview_date']}</td>";
+                                echo "<td class='record-details'>" . htmlspecialchars($row['record']) . "</td>";
+                                echo "<td>";
+                                echo "<button class='delete-btn' onclick='confirmDeleteInterview({$row['id']})'>刪除</button>";
+                                echo "</td>";
+                                echo "</tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='5'>查詢出錯: " . $conn->error . "</td></tr>";
                         }
-                    } else {
-                        echo "<tr><td colspan='5'>查詢出錯: " . $conn->error . "</td></tr>";
-                    }
-                    ?>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- 訪談紀錄 -->
-        <div class="section">
-            <h2>訪談紀錄</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>訪談編號</th>
-                        <th>個案名稱</th>
-                        <th>負責社工</th>
-                        <th>訪談日期</th>
-                        <th>訪談內容</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $result = $conn->query("
-                    SELECT ir.id, c.case_name, sw.name as social_worker_name,
-                           ir.interview_date, ir.record
-                    FROM interview_records ir  /* 修��這裡：從 interview 改為 interview_records */
-                    LEFT JOIN cases c ON ir.case_id = c.id
-                    LEFT JOIN social_workers sw ON c.social_worker_id = sw.id
-                    ORDER BY ir.interview_date DESC
-                ");
-                    if ($result) {
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<tr>";
-                            echo "<td>{$row['id']}</td>";
-                            echo "<td>{$row['case_name']}</td>";
-                            echo "<td>{$row['social_worker_name']}</td>";
-                            echo "<td class='date-column'>{$row['interview_date']}</td>";
-                            echo "<td class='record-details'>" . htmlspecialchars($row['record']) . "</td>";
-                            echo "<td>";
-                            echo "<button class='delete-btn' onclick='confirmDeleteInterview({$row['id']})'>刪除</button>";
-                            echo "</td>";
-                            echo "</tr>";
-                        }
-                    } else {
-                        echo "<tr><td colspan='5'>查詢出錯: " . $conn->error . "</td></tr>";
-                    }
-                    ?>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- 社��活動統計 -->
-        <div class="section">
-            <h2>社工活動統計</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>社工姓名</th>
-                        <th>負責個案數</th>
-                        <th>本月訪談次數</th>
-                        <th>總訪談次數</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $result = $conn->query("
-                    SELECT 
-                        sw.name,
-                        COUNT(DISTINCT c.id) as case_count,
-                        COUNT(DISTINCT CASE 
-                            WHEN MONTH(ir.interview_date) = MONTH(CURRENT_DATE) 
-                            THEN ir.id 
-                            END) as monthly_interviews,
-                        COUNT(DISTINCT ir.id) as total_interviews
-                    FROM social_workers sw
-                    LEFT JOIN cases c ON sw.id = c.social_worker_id
-                    LEFT JOIN interview_records ir ON c.id = ir.case_id  /* 這裡也要修改 */
-                    WHERE sw.is_admin = 0
-                    GROUP BY sw.id, sw.name
-                ");
-                    if ($result) {
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<tr>";
-                            echo "<td>{$row['name']}</td>";
-                            echo "<td>{$row['case_count']}</td>";
-                            echo "<td>{$row['monthly_interviews']}</td>";
-                            echo "<td>{$row['total_interviews']}</td>";
-                            echo "</tr>";
-                        }
-                    } else {
-                        echo "<tr><td colspan='4'>查詢出錯: " . $conn->error . "</td></tr>";
-                    }
-                    ?>
-                </tbody>
-            </table>
+                        ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -297,7 +446,7 @@ $conn = new mysqli('localhost', 'root', '', 'test1');
         currentCaseId = caseId;
         Swal.fire({
             title: '確認刪除',
-            text: '您確定要刪除這個個案���？此操作無法復原。',
+            text: '您確定要刪除這個個案嗎？此操作無法復原。',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -395,7 +544,7 @@ $conn = new mysqli('localhost', 'root', '', 'test1');
             cancelButtonText: '取消'
         }).then((result) => {
             if (result.isConfirmed) {
-                // 發送刪除請求
+                // 發送刪���請求
                 fetch('delete_interview1.php', {
                     method: 'POST',
                     headers: {
@@ -411,7 +560,7 @@ $conn = new mysqli('localhost', 'root', '', 'test1');
                             text: data.message,
                             icon: 'success'
                         }).then(() => {
-                            // 重新載���頁面以更新列表
+                            // 新載頁面以更新列表
                             location.reload();
                         });
                     } else {

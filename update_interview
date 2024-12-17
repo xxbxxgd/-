@@ -1,0 +1,56 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'error', 'message' => '未授權的訪問']);
+    exit();
+}
+
+// 資料庫連線設定
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "test1";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'error', 'message' => '資料庫連接失敗']);
+    exit();
+}
+
+// 獲取POST數據
+$id = $_POST['id'];
+$interview_date = $_POST['interview_date'];
+$record = $_POST['record'];
+
+// 確認該訪談記錄屬於當前社工
+$check_sql = "SELECT 1 FROM interview_records ir 
+              JOIN cases c ON ir.case_id = c.id 
+              WHERE ir.id = ? AND c.social_worker_id = ?";
+$check_stmt = $conn->prepare($check_sql);
+$check_stmt->bind_param("ii", $id, $_SESSION['user_id']);
+$check_stmt->execute();
+$check_result = $check_stmt->get_result();
+
+if ($check_result->num_rows === 0) {
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'error', 'message' => '無權限編輯此記錄']);
+    exit();
+}
+
+// 更新記錄
+$sql = "UPDATE interview_records SET interview_date = ?, record = ? WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ssi", $interview_date, $record, $id);
+
+if ($stmt->execute()) {
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'success', 'message' => '更新成功']);
+} else {
+    header('Content-Type: application/json');
+    echo json_encode(['status' => 'error', 'message' => '更新失敗: ' . $conn->error]);
+}
+
+$conn->close(); 
