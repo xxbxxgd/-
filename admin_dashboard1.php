@@ -148,7 +148,7 @@ $totalInterviews = $conn->query("SELECT COUNT(*) as total FROM interview_records
     <div class="dashboard-container">
         <h1 class="mb-4">管理員儀表板</h1>
 
-        <!-- 統計��據 -->
+        <!-- 統計據 -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-title">
@@ -233,9 +233,9 @@ $totalInterviews = $conn->query("SELECT COUNT(*) as total FROM interview_records
                         $sql = "SELECT 
                                 c.id,
                                 c.case_name,
-                                ci.client_name,
-                                ci.client_age,
-                                ci.client_contact,
+                                COALESCE(ci.client_name, c.case_name) as client_name,
+                                COALESCE(ci.client_age, 0) as client_age,
+                                COALESCE(ci.client_contact, '未提供') as client_contact,
                                 sw.name as social_worker_name,
                                 c.status
                             FROM cases c
@@ -275,7 +275,7 @@ $totalInterviews = $conn->query("SELECT COUNT(*) as total FROM interview_records
                                 </tr>';
                             }
                         } else {
-                            echo "<tr><td colspan='8' class='text-center'>目前沒有個案記錄</td></tr>";
+                            echo "<tr><td colspan='8' class='text-center'>目前沒��個案記錄</td></tr>";
                         }
                         ?>
                     </tbody>
@@ -536,7 +536,7 @@ $totalInterviews = $conn->query("SELECT COUNT(*) as total FROM interview_records
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label class="form-label" for="add_case_name">
-                                        <i class="bi bi-folder2 me-2"></i>個案名稱
+                                        <i class="bi bi-folder2 me-2"></i>個案名���
                                     </label>
                                     <input type="text" class="form-control" id="add_case_name" name="case_name" autocomplete="off" required>
                                 </div>
