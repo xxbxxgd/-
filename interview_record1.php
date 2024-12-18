@@ -54,11 +54,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bind_param("iss", $case_id, $interview_date, $record);
     }
 
-    if ($stmt->execute()) {
-        $successMessage = $edit_mode ? "訪談紀錄更新成功！" : "訪談紀錄提交成功！";
+    $success = $stmt->execute();
+    
+    if ($success) {
+        $_SESSION['alert'] = [
+            'type' => 'success',
+            'title' => '成功！',
+            'message' => $edit_mode ? '訪談紀錄更新成功！' : '訪談紀錄提交成功！'
+        ];
+        header("Location: " . $_SERVER['PHP_SELF'] . ($edit_mode ? "?id=$interview_id" : ""));
+        exit();
     } else {
-        $errorMessage = "錯誤: " . $stmt->error;
+        $_SESSION['alert'] = [
+            'type' => 'error',
+            'title' => '錯誤',
+            'message' => '錯誤: ' . $stmt->error
+        ];
+        header("Location: " . $_SERVER['PHP_SELF'] . ($edit_mode ? "?id=$interview_id" : ""));
+        exit();
     }
+}
+
+// 在 HTML 之前加入這段處理提示的代碼
+if (isset($_SESSION['alert'])) {
+    $alert = $_SESSION['alert'];
+    echo "<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: '{$alert['type']}',
+                title: '{$alert['title']}',
+                text: '{$alert['message']}',
+                confirmButtonText: '確定'
+            });
+        });
+    </script>";
+    unset($_SESSION['alert']);
 }
 
 $conn->close();
@@ -70,9 +100,10 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>新增訪談紀錄</title>
-    <!-- Bootstrap CSS -->
+    <!-- 確保 SweetAlert2 在最前面載入 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- 其他 CSS 和 JS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         .bg-gradient-primary-to-secondary {
@@ -133,7 +164,10 @@ $conn->close();
                                         <option value="" selected disabled>請選擇個案...</option>
                                         <?php
                                         $conn = new mysqli('localhost', 'root', '', 'test1');
-                                        $sql = "SELECT id, case_name FROM cases WHERE social_worker_id = ? AND status = 1";
+                                        $sql = "SELECT c.id, c.case_name 
+                                                FROM cases c 
+                                                WHERE c.social_worker_id = ? 
+                                                AND c.status = 1";
                                         $stmt = $conn->prepare($sql);
                                         $stmt->bind_param("i", $_SESSION['user_id']);
                                         $stmt->execute();

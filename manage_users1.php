@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $new_name = trim($_POST['name']);
     $new_email = trim($_POST['email']);
     $new_password = trim($_POST['password']);
-    $is_admin = isset($_POST['is_admin']) ? 1 : 0;
+    $is_admin = isset($_POST['is_admin_'.$user_id]) && $_POST['is_admin_'.$user_id] == '1' ? 1 : 0;
     
     try {
         $conn->begin_transaction();
@@ -60,7 +60,7 @@ $result = $conn->query("SELECT * FROM social_workers ORDER BY id");
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用戶管理</title>
+    <title>用���管理</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -205,13 +205,13 @@ $result = $conn->query("SELECT * FROM social_workers ORDER BY id");
                             <i class="bi bi-shield-fill me-2"></i>管理員權限
                         </label>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="is_admin" 
+                            <input class="form-check-input" type="radio" name="is_admin_<?= $user['id'] ?>" 
                                    id="admin_yes_<?= $user['id'] ?>" value="1" 
                                    <?= $user['is_admin'] ? 'checked' : '' ?>>
                             <label class="form-check-label" for="admin_yes_<?= $user['id'] ?>">是</label>
                         </div>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="is_admin" 
+                            <input class="form-check-input" type="radio" name="is_admin_<?= $user['id'] ?>" 
                                    id="admin_no_<?= $user['id'] ?>" value="0" 
                                    <?= !$user['is_admin'] ? 'checked' : '' ?>>
                             <label class="form-check-label" for="admin_no_<?= $user['id'] ?>">否</label>

@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $errorMessage = "密碼錯誤";
         }
     } else {
-        $errorMessage = "用戶名不存在";
+        $errorMessage = "帳號不存在";
     }
 }
 
@@ -140,8 +140,8 @@ $conn->close();
             <?php endif; ?>
             <form action="login1.php" method="POST">
                 <div class="mb-3">
-                    <label for="username" class="form-label">用戶名</label>
-                    <input type="text" id="username" name="username" class="form-control" placeholder="輸入用戶名" required>
+                    <label for="username" class="form-label">帳號</label>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="輸入帳號" required>
                 </div>
                 <div class="mb-3">
                     <label for="password" class="form-label">密碼</label>

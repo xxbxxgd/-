@@ -536,7 +536,7 @@ $totalInterviews = $conn->query("SELECT COUNT(*) as total FROM interview_records
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label class="form-label" for="add_case_name">
-                                        <i class="bi bi-folder2 me-2"></i>個案名���
+                                        <i class="bi bi-folder2 me-2"></i>個案名稱
                                     </label>
                                     <input type="text" class="form-control" id="add_case_name" name="case_name" autocomplete="off" required>
                                 </div>

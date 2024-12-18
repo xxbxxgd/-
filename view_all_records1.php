@@ -300,6 +300,74 @@ $conn = new mysqli('localhost', 'root', '', 'test1');
         .search-box {
             margin: 0;
         }
+
+        /* 統計紀錄的樣式 */
+        .statistics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            min-width: 250px;
+        }
+
+        .stat-name {
+            color: #0d6efd;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .stat-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-label {
+            font-weight: bold;
+            color: #495057;
+            margin-right: 5px;
+        }
+
+        .stat-value {
+            color: #0d6efd;
+        }
+
+        /* 保持原有的表格樣式 */
+        .section table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .section th, 
+        .section td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .section th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .section tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .section td {
+            color: #333;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -308,25 +376,43 @@ $conn = new mysqli('localhost', 'root', '', 'test1');
         <div class="container">
             <h1>所有紀錄</h1>
             
+            <!-- 個案分配紀錄區塊 -->
             <div class="section">
-                <h2>個案分配紀錄</h2>
-                
-                <!-- 添加搜尋框 -->
-                <div class="search-container mb-4">
-                    <form method="GET" class="row justify-content-end">
-                        <div class="col-md-4">
-                            <div class="input-group">
-                                <input type="text" name="search" class="form-control" 
-                                       placeholder="搜尋個案名稱..." 
-                                       value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
-                                <button class="btn btn-primary" type="submit">
-                                    <i class="bi bi-search"></i>搜尋
-                                </button>
-                            </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">個案分配紀錄</h2>
+                    <form method="GET" style="margin: 0; margin-right: 10px;">
+                        <div style="display: flex; align-items: center;">
+                            <input type="text" 
+                                   name="search" 
+                                   placeholder="搜尋個案名稱..." 
+                                   value="<?= htmlspecialchars($_GET['search'] ?? '') ?>"
+                                   style="height: 35px; 
+                                          border: 1px solid #ccc; 
+                                          border-right: none;
+                                          border-radius: 4px 0 0 4px;
+                                          padding: 0 10px;
+                                          width: 140px;
+                                          box-sizing: border-box;">
+                            <button type="submit" 
+                                    style="height: 35px;
+                                           width: 50px;
+                                           background-color: #0d6efd;
+                                           border: 1px solid #0d6efd;
+                                           color: white;
+                                           border-radius: 0 4px 4px 0;
+                                           cursor: pointer;
+                                           padding: 0 8px;
+                                           font-size: 14px;
+                                           line-height: 35px;
+                                           display: flex;
+                                           align-items: center;
+                                           justify-content: center;
+                                           box-sizing: border-box;">
+                                搜尋
+                            </button>
                         </div>
                     </form>
                 </div>
-
                 <table>
                     <thead>
                         <tr>
@@ -374,13 +460,14 @@ $conn = new mysqli('localhost', 'root', '', 'test1');
                                 echo "</tr>";
                             }
                         } else {
-                            echo "<tr><td colspan='6'>沒有找到相關個案</td></tr>";
+                            echo "<tr><td colspan='6'>沒有找到相關案</td></tr>";
                         }
                         ?>
                     </tbody>
                 </table>
             </div>
 
+            <!-- 訪談紀錄區塊 -->
             <div class="section">
                 <h2>訪談紀錄</h2>
                 <table>
@@ -419,6 +506,52 @@ $conn = new mysqli('localhost', 'root', '', 'test1');
                             }
                         } else {
                             echo "<tr><td colspan='5'>查詢出錯: " . $conn->error . "</td></tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 統計紀錄區塊 -->
+            <div class="section">
+                <h2>社工活動統計</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>社工姓名</th>
+                            <th>負責個案數</th>
+                            <th>本月訪談次數</th>
+                            <th>總訪談次數</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        $result = $conn->query("
+                        SELECT 
+                            sw.name,
+                            COUNT(DISTINCT c.id) as case_count,
+                            COUNT(DISTINCT CASE 
+                                WHEN MONTH(ir.interview_date) = MONTH(CURRENT_DATE) 
+                                THEN ir.id 
+                                END) as monthly_interviews,
+                            COUNT(DISTINCT ir.id) as total_interviews
+                        FROM social_workers sw
+                        LEFT JOIN cases c ON sw.id = c.social_worker_id
+                        LEFT JOIN interview_records ir ON c.id = ir.case_id
+                        WHERE sw.is_admin = 0
+                        GROUP BY sw.id, sw.name
+                        ");
+                        if ($result) {
+                            while ($row = $result->fetch_assoc()) {
+                                echo "<tr>";
+                                echo "<td>{$row['name']}</td>";
+                                echo "<td>{$row['case_count']}</td>";
+                                echo "<td>{$row['monthly_interviews']}</td>";
+                                echo "<td>{$row['total_interviews']}</td>";
+                                echo "</tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='4'>查詢出錯: " . $conn->error . "</td></tr>";
                         }
                         ?>
                     </tbody>
@@ -544,7 +677,7 @@ $conn = new mysqli('localhost', 'root', '', 'test1');
             cancelButtonText: '取消'
         }).then((result) => {
             if (result.isConfirmed) {
-                // 發送刪���請求
+                // 發送刪請求
                 fetch('delete_interview1.php', {
                     method: 'POST',
                     headers: {

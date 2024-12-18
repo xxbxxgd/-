@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2024-12-08 12:18:50
+-- 產生時間： 2024-12-18 10:44:52
 -- 伺服器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.2.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- 資料庫： `test`
+-- 資料庫： `test1`
 --
 
 -- --------------------------------------------------------
@@ -42,7 +42,11 @@ CREATE TABLE `case information` (
 
 INSERT INTO `case information` (`id`, `case_name`, `client_name`, `client_age`, `client_contact`, `created_at`) VALUES
 (1, '骨折', '水同學', 21, '0326561151', '2024-12-08 11:07:38'),
-(2, 'njngf', 'fgbfd', 56, '068563156', '2024-12-08 11:08:00');
+(2, 'njngf', 'fgbfd', 56, '068563156', '2024-12-08 11:08:00'),
+(3, 'football', 'messi', 39, '25700145365', '2024-12-17 09:37:52'),
+(4, 'david', 'david', 25, '0912345678', '2024-12-17 10:05:58'),
+(5, '市川', '市川', 30, '0923456789', '2024-12-17 10:05:58'),
+(6, '頭痛', '小名', 5, '036977451', '2024-12-18 09:38:29');
 
 -- --------------------------------------------------------
 
@@ -63,11 +67,12 @@ CREATE TABLE `cases` (
 --
 
 INSERT INTO `cases` (`id`, `case_name`, `social_worker_id`, `created_at`, `status`) VALUES
-(1, '羅傑叫你過去一下', 1, '2024-12-05 08:22:17', 1),
-(2, '市川', 2, '2024-12-08 10:37:04', 1),
-(3, 'david\r\n', 2, '2024-12-08 10:38:38', 1),
-(4, '骨折', NULL, '2024-12-08 11:07:38', 1),
-(5, 'njngf', NULL, '2024-12-08 11:08:00', 1);
+(2, '市川', 4, '2024-12-08 10:37:04', 1),
+(3, 'david', 2, '2024-12-08 10:38:38', 1),
+(4, '骨折', 3, '2024-12-08 11:07:38', 1),
+(5, 'njngf', NULL, '2024-12-08 11:08:00', 1),
+(7, 'football', 0, '2024-12-17 09:37:52', 1),
+(8, '頭痛', NULL, '2024-12-18 09:38:29', 1);
 
 -- --------------------------------------------------------
 
@@ -87,9 +92,10 @@ CREATE TABLE `interview_records` (
 --
 
 INSERT INTO `interview_records` (`id`, `case_id`, `interview_date`, `record`) VALUES
-(1, 1, '2024-12-08', '545661'),
-(2, 1, '2024-12-08', '545661'),
-(3, 2, '2024-12-08', '5615482231');
+(3, 2, '2024-12-08', '5615482231'),
+(4, 3, '2024-12-16', 'i think fpf[dk hnbjmoibh pokgkbm emldcpv'),
+(5, 7, '2024-12-17', 'mrbom rmn, d mjlnqeoij '),
+(6, 4, '2024-12-18', 'n ,l;, lgmfkvmfkdewg eth');
 
 -- --------------------------------------------------------
 
@@ -112,10 +118,10 @@ CREATE TABLE `social_workers` (
 
 INSERT INTO `social_workers` (`id`, `username`, `password`, `name`, `email`, `is_admin`) VALUES
 (0, 'admin', '$2y$10$JMJCYzDILaWD3pFbwW4yKek8u3guxxXoinD5LVuqzeTqxlCK2pM6G', '管理員', 'admin@example.com', 1),
-(1, 'roy', '$2y$10$JMJCYzDILaWD3pFbwW4yKek8u3guxxXoinD5LVuqzeTqxlCK2pM6G', 'Roy', 'roy@example.com', 0),
-(2, '傑寶', '$2y$10$aZM4Hf6VvnRYUjhO.ID5X.L52ONpRhaZLXMtmGPT80TvqZf9UeLvq', '羅傑', '412401501@m365.fju.edu.tw', 0),
-(3, '傑寶', '$2y$10$bR86zh6QAwR5c5TH34Hqke3dtnALUJzdgeNojFHML8EI0KzQgyMqy', '羅傑', '412401501@m365.fju.edu.tw', 0),
-(4, '山田', '$2y$10$aGhpypD5zRK6dszVKy15sem8R.pjhi.URRB//roS3vcQ7/yB23EGu', '杏奈奈', '4753@gmail.com', 0);
+(1, 'roy', '$2y$10$JMJCYzDILaWD3pFbwW4yKek8u3guxxXoinD5LVuqzeTqxlCK2pM6G', 'Roy', 'roy@example.com', 1),
+(2, '豬豬寶貝', '$2y$10$qimInHkX7YYdKksESiysI.KwWJgQSmWP9meXtigwkZ98Pvcs8aDlu', '統神', '412401501@m365.fju.edu.tw', 1),
+(3, '傑寶', '$2y$10$nT5WD79k7sdWK75/Rtnli.4pFz9wTO.jhj7S6DOIqoluZyAJ0h8HW', '羅傑', '412401501@m365.fju.edu.tw', 1),
+(4, '山田', '$2y$10$aGhpypD5zRK6dszVKy15sem8R.pjhi.URRB//roS3vcQ7/yB23EGu', '杏奈奈', '4753@gmail.com', 1);
 
 --
 -- 已傾印資料表的索引
@@ -153,19 +159,19 @@ ALTER TABLE `social_workers`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `case information`
 --
 ALTER TABLE `case information`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `cases`
 --
 ALTER TABLE `cases`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `interview_records`
 --
 ALTER TABLE `interview_records`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `social_workers`

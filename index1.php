@@ -182,7 +182,7 @@ if ($_SESSION['is_admin']) {
                 <h3>新增社工</h3>
                 <p>註冊新的社工帳號</p>
             </a>
-            <a href="manage_users.php" class="feature-card">
+            <a href="manage_users1.php" class="feature-card">
                 <h3>用戶管理</h3>
                 <p>管理社工帳號和權限</p>
             </a>
@@ -206,7 +206,7 @@ if ($_SESSION['is_admin']) {
                 <h3>我的個案</h3>
                 <p>查看個案資料及訪談紀錄</p>
             </a>
-            <a href="profile.php" class="feature-card">
+            <a href="profile1.php" class="feature-card">
                 <h3>個人資料</h3>
                 <p>修改個人帳號資料</p>
             </a>
